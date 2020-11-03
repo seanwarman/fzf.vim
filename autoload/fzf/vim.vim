@@ -1029,6 +1029,65 @@ function! fzf#vim#commands(...)
 endfunction
 
 " ------------------------------------------------------------------
+" Changes
+" ------------------------------------------------------------------
+function! s:format_change(line)
+  return substitute(a:line, '\S', '\=s:yellow(submatch(0), "Number")', '')
+endfunction
+
+function! s:change_sink(lines)
+  if len(a:lines) < 2
+    return
+  endif
+  let cmd = s:action_for(a:lines[0])
+  if !empty(cmd)
+    execute 'silent' cmd
+  endif
+  execute 'normal! `'.matchstr(a:lines[1], '\S').'zz'
+endfunction
+
+function! fzf#vim#changes(...)
+  redir => cout
+  silent changes
+  redir END
+  let list = split(cout, "\n")
+  return s:fzf('changes', {
+  \ 'source':  extend(list[0:0], map(list[1:], 's:format_change(v:val)')),
+  \ 'sink*':   s:function('s:change_sink'),
+  \ 'options': '+m -x --ansi --tiebreak=index --header-lines 1 --tiebreak=begin --prompt "Changes> "'}, a:000)
+endfunction
+
+
+" ------------------------------------------------------------------
+" Jumps
+" ------------------------------------------------------------------
+function! s:format_jump(line)
+  return substitute(a:line, '\S', '\=s:yellow(submatch(0), "Number")', '')
+endfunction
+
+function! s:jump_sink(lines)
+  if len(a:lines) < 2
+    return
+  endif
+  let cmd = s:action_for(a:lines[0])
+  if !empty(cmd)
+    execute 'silent' cmd
+  endif
+  execute 'normal! `'.matchstr(a:lines[1], '\S').'zz'
+endfunction
+
+function! fzf#vim#jumps(...)
+  redir => cout
+  silent jumps
+  redir END
+  let list = reverse(split(cout, "\n"))
+  return s:fzf('jumps', {
+  \ 'source':  extend(list[0:0], map(list[1:], 's:format_jump(v:val)')),
+  \ 'sink*':   s:function('s:jump_sink'),
+  \ 'options': '+m -x --ansi --tiebreak=index --header-lines 1 --tiebreak=begin --prompt "Jumps> "'}, a:000)
+endfunction
+
+" ------------------------------------------------------------------
 " Marks
 " ------------------------------------------------------------------
 function! s:format_mark(line)
