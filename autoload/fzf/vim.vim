@@ -1050,7 +1050,7 @@ function! fzf#vim#changes(...)
   redir => cout
   silent changes
   redir END
-  let list = split(cout, "\n")
+  let list = reverse(split(cout, "\n"))
   return s:fzf('changes', {
   \ 'source':  extend(list[0:0], map(list[1:], 's:format_change(v:val)')),
   \ 'sink*':   s:function('s:change_sink'),
